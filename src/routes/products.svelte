@@ -49,7 +49,7 @@
     <th>Description</th>
     <th>Brand Name</th>
     <th>Categories</th>
-    <button>Add New</button>
+    <button on:click={() => {showEditor = true; editorProduct = null}}>Add New</button>
   </tr>
   {#each filterProducts(products, searchString) as p}
     <tr>
@@ -68,7 +68,7 @@
 
 {#if showEditor}
   <div class="editor-parent">
-    <ProductEditor product={editorProduct}/>
+    <ProductEditor product={editorProduct} />
   </div>
 {/if}
 

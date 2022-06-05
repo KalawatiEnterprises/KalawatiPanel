@@ -32,19 +32,25 @@
     .then(response => response.json())
     .then(data => products = data);
 
+  // if product is null that means it should be added to DB
+  let productIsNew = false;
   export let product = {}
-  //   "Name": "",
-  //   "Description": "",
-  //   "Brand": {
-  //     "ID": null,
-  //     "Name": ""
-  //   },
-  //   "Categories": []
-  // };
+  if (product == null) {
+    product = {
+      "Name": "",
+      "Description": "",
+      "Brand": {
+        "ID": null,
+        "Name": ""
+      },
+      "Categories": null
+    };
+    productIsNew = true;
+  }
 
   const handleSave = async() => {
     const res = await fetch("http://localhost:4001/api/products", {
-      method: "post",
+      method: productIsNew ? "post" : "put",
       headers: {
         'Content-Type': 'application/json'
       },
@@ -74,6 +80,7 @@
     <div class="field">
       Brand:
       <select bind:value={product.Brand.ID}>
+        <option value={null} disabled selected hidden>Select a Brand</option>
         {#each brands as b}
           <option value={b.ID}>{b.Name}</option>
         {/each}
