@@ -17,6 +17,11 @@
 -->
 
 <script>
+  import { createEventDispatcher } from 'svelte';
+  import { Product } from "../classes"
+
+  const dispatch = createEventDispatcher();
+
   let categories = [];
   fetch('http://localhost:4001/api/categories')
     .then(response => response.json())
@@ -32,31 +37,32 @@
     .then(response => response.json())
     .then(data => products = data);
 
-  // if product is null that means it should be added to DB
-  let productIsNew = false;
-  export let product = {}
-  if (product == null) {
-    product = {
-      "Name": "",
-      "Description": "",
-      "Brand": {
-        "ID": null,
-        "Name": ""
-      },
-      "Categories": null
-    };
-    productIsNew = true;
+  export let product = null;
+
+  let noticeText = ""
+  const validate = (product) => {
+    if (product.Brand.ID == null)
+      return "Please Enter A Brand";
+    if (product.Name == "")
+      return "Please Enter A Name";
+    return "";
   }
 
   const handleSave = async() => {
+    noticeText = validate(product);
+    if (noticeText != "") return;
     const res = await fetch("http://localhost:4001/api/products", {
-      method: productIsNew ? "post" : "put",
+      method: product.ID == null ? "post" : "put",
       headers: {
-        'Content-Type': 'application/json'
+        "Content-Type": "application/json"
       },
       body: JSON.stringify(product)
     });
+    dispatch("products-updated", {});
   }
+
+  const handleCancel = () =>
+    dispatch("edit-canceled", {})
 
   let newCategoryID = null;
 
@@ -67,6 +73,7 @@
 
 
 <div class="product-editor">
+  <h4 class="notice">{noticeText}</h4>
   <div class="fields">
     <div class="field">
       Name:
@@ -116,7 +123,10 @@
 
     </div>
   </div>
-  <button on:click={handleSave} class="save">Save</button>
+  <div class="options">
+    <button on:click={handleCancel}>Cancel</button>
+    <button on:click={handleSave}>Save</button>
+  </div>
 </div>
 
 <style>
@@ -128,10 +138,16 @@
     justify-content: space-around;
     align-items: center;
   }
-  .save {
+  .options {
     position: absolute;
     bottom: 3rem;
     right: 4rem;
+    display: flex;
+    width: 12rem;
+    justify-content: space-between;
+  }
+  button {
+    width: 5rem;
   }
   .field {
     width: 30rem;
@@ -143,16 +159,19 @@
     width: 60%;
   }
   .categories-menu {
-    border: 1px solid pink;
     display: flex;
     flex-direction: column;
   }
   .editor {
-    border: 1px solid purple;
     display: flex;
     justify-content: space-between;
   }
-  .editor button {
-    width: 5rem;
+  .notice {
+    color: red;
+    position: absolute;
+    top: 2rem;
+    left: 0; right: 0;
+    margin: auto;
+    text-align: center;
   }
 </style>

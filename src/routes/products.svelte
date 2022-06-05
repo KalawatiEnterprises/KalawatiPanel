@@ -17,59 +17,84 @@
 -->
 
 <script>
-  import ProductEditor from "../components/ProductEditor.svelte"
+  import { fade } from 'svelte/transition';
+  import ProductEditor from "../components/ProductEditor.svelte";
+  import { Product } from "../classes";
+
   const filterProducts = (products, searchString) =>
     products.filter(i => i.Name.toLowerCase().includes(searchString.toLowerCase()))
-
-  let products = [];
-  fetch('http://localhost:4001/api/products')
-    .then(response => response.json())
-    .then(data => {
-      products = data;
-    });
 
   const stringify = (categories) =>
     categories == null
       ? "None"
       : categories.map(i => i.Name).toString();
 
-  let searchString = "";
+  let products = [];
+  const loadProducts = () =>
+    fetch('http://localhost:4001/api/products')
+      .then(response => response.json())
+      .then(data => {
+        products = data;
+      });
+  loadProducts();
 
+  let searchString = "";
   let showEditor = false;
-  let editorProduct = null;
+  let editorProduct = new Product();
+
+  const handleAddNew = () => {
+    showEditor = true;
+    editorProduct = new Product();
+  }
+
+  const handleCancel = () => {
+    showEditor = false;
+    editorProduct = new Product();
+  }
+
+  const handleUpdate = () => {
+    loadProducts();
+    handleCancel();
+  }
 </script>
 
 <div class="searchbox">
   Search Products <input bind:value={searchString}/>
 </div>
 
-<table>
+{#key products}
+<table in:fade="{{ duration: 200, delay: 100 }}" out:fade="{{ duration: 300, delay: 0 }}">
   <tr>
     <th>Name</th>
     <th>Description</th>
     <th>Brand Name</th>
     <th>Categories</th>
-    <button on:click={() => {showEditor = true; editorProduct = null}}>Add New</button>
+    <button on:click={handleAddNew}>Add New</button>
   </tr>
-  {#each filterProducts(products, searchString) as p}
-    <tr>
-      <td>{p.Name}</td>
-      <td>{p.Description}</td>
-      <td>{p.Brand.Name}</td>
-      <td>
-        {stringify(p.Categories)}
-      </td>
-      <button on:click={() => {showEditor = true; editorProduct = p}}>
-        Edit
-      </button>
-    </tr>
-  {/each}
+  {#if products != null}
+    {#each filterProducts(products, searchString) as p}
+      <tr>
+        <td>{p.Name}</td>
+        <td>{p.Description}</td>
+        <td>{p.Brand.Name}</td>
+        <td>
+          {stringify(p.Categories)}
+        </td>
+        <button on:click={() => {showEditor = true; editorProduct = p}}>
+          Edit
+        </button>
+      </tr>
+    {/each}
+  {:else}
+    <h1>No Products Exist In The Database.</h1>
+  {/if}
 </table>
+{/key}
 
 {#if showEditor}
-  <div class="editor-parent">
-    <ProductEditor product={editorProduct} />
-  </div>
+<div class="editor-parent" in:fade="{{ duration: 150 }}" out:fade="{{ duration: 200 }}">>
+  <ProductEditor product={editorProduct} on:products-updated={handleUpdate} on:edit-canceled={handleCancel}/>
+</div>
 {/if}
 
 <style>
