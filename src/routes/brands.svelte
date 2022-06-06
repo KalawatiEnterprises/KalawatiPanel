@@ -18,7 +18,7 @@
 
 <script>
   import { fade } from 'svelte/transition';
-  // import BrandEditor from "../components/BrandEditor.svelte";
+  import BrandEditor from "../components/BrandEditor.svelte";
   import { Brand } from "../classes";
 
   const filterBrands = (brands, searchString) => [...new Set([
@@ -87,10 +87,9 @@
 {/key}
 
 {#if showEditor}
-  <h1>Coming Soon</h1>
-<!--div class="editor-parent" in:fade="{{ duration: 150 }}" out:fade="{{ duration: 200 }}">
-  <ProductEditor product={editorProduct} on:products-updated={handleUpdate} on:edit-canceled={handleCancel}/>
-</div-->
+<div class="editor-parent" in:fade="{{ duration: 150 }}" out:fade="{{ duration: 200 }}">
+  <BrandEditor brand={editorBrand} on:brands-updated={handleUpdate} on:edit-canceled={handleCancel}/>
+</div>
 {/if}
 
 <style>

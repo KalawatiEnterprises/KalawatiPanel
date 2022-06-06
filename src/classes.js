@@ -10,7 +10,10 @@ export class Product {
 export class Brand {
   constructor() {
     this.ID = null;
+    this.DisplayName = "";
     this.Name = "";
+    this.Website = "";
+    this.LogoURL = "";
   }
 }
 

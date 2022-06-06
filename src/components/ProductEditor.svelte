@@ -18,7 +18,6 @@
 
 <script>
   import { createEventDispatcher } from 'svelte';
-  import { Product } from "../classes"
 
   const dispatch = createEventDispatcher();
 
@@ -130,9 +129,11 @@
 
     </div>
   </div>
-  <div class="options-alt">
-    <button on:click={() => handleSave("delete")}>Delete</button>
-  </div>
+  {#if product.ID != null}
+    <div class="options-alt">
+      <button on:click={() => handleSave("delete")}>Delete</button>
+    </div>
+  {/if}
   <div class="options">
     <button on:click={handleCancel}>Cancel</button>
     <button on:click={() => handleSave(product.ID == null ? "post" : "put")}>Save</button>
