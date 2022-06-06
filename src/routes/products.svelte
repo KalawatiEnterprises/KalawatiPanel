@@ -84,6 +84,8 @@
           Edit
         </button>
       </tr>
+    {:else}
+      <h1>No Products With This Name Found.</h1>
     {/each}
   {:else}
     <h1>No Products Exist In The Database.</h1>
