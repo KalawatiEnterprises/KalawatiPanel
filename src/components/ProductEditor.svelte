@@ -48,11 +48,12 @@
     return "";
   }
 
-  const handleSave = async() => {
+  const handleSave = async(method) => {
     noticeText = validate(product);
     if (noticeText != "") return;
     const res = await fetch("http://localhost:4001/api/products", {
-      method: product.ID == null ? "post" : "put",
+      // method: product.ID == null ? "post" : "put",
+      method: method,
       headers: {
         "Content-Type": "application/json"
       },
@@ -64,6 +65,10 @@
   const handleCancel = () =>
     dispatch("edit-canceled", {})
 
+  const handleCategoryDelete = (c) =>{
+    product.Categories = product.Categories.filter((i) => i.ID !== c.ID);
+  }
+
   let newCategoryID = null;
 
   const filteredCategories = (c, pc) =>
@@ -73,7 +78,7 @@
 
 
 <div class="product-editor">
-  <h4 class="notice">{noticeText}</h4>
+  <h4 class="notice warning">{noticeText}</h4>
   <div class="fields">
     <div class="field">
       Name:
@@ -89,19 +94,21 @@
       <select bind:value={product.Brand.ID}>
         <option value={null} disabled selected hidden>Select a Brand</option>
         {#each brands as b}
-          <option value={b.ID}>{b.Name}</option>
+          <option value={b.ID}>{b.Name} / {b.DisplayName}</option>
         {/each}
       </select>
     </div>
   </div>
   <div class="categories-menu field">
+    Categories: (double click to delete)
     <div class="categories">
       {#if product.Categories != null}
-        {#each product.Categories as c}
-          <span>{c.Name}</span>
+        {#each product.Categories as c, i}
+          <span on:dblclick={() => handleCategoryDelete(c)}>{c.Name}{`${(i < product.Categories.length - 1) ? ", " : ""}`}</span>
         {/each}
       {:else}
-        No Categories Added
+        <div>No Categories Added</div>
+        <div class="warning">WARNING: If no categories are added the product won't be shown on the website.</div>
       {/if}
     </div>
 
@@ -123,9 +130,12 @@
 
     </div>
   </div>
+  <div class="options-alt">
+    <button on:click={() => handleSave("delete")}>Delete</button>
+  </div>
   <div class="options">
     <button on:click={handleCancel}>Cancel</button>
-    <button on:click={handleSave}>Save</button>
+    <button on:click={() => handleSave(product.ID == null ? "post" : "put")}>Save</button>
   </div>
 </div>
 
@@ -137,6 +147,14 @@
     display: flex;
     justify-content: space-around;
     align-items: center;
+  }
+  .options-alt {
+    position: absolute;
+    bottom: 3rem;
+    left: 4rem;
+    display: flex;
+    width: 12rem;
+    justify-content: space-between;
   }
   .options {
     position: absolute;
@@ -166,8 +184,10 @@
     display: flex;
     justify-content: space-between;
   }
-  .notice {
+  .warning {
     color: red;
+  }
+  .notice {
     position: absolute;
     top: 2rem;
     left: 0; right: 0;

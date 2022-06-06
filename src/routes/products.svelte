@@ -76,7 +76,7 @@
       <tr>
         <td>{p.Name}</td>
         <td>{p.Description}</td>
-        <td>{p.Brand.Name}</td>
+        <td>{p.Brand.DisplayName} ({p.Brand.Name})</td>
         <td>
           {stringify(p.Categories)}
         </td>
@@ -92,7 +92,7 @@
 {/key}
 
 {#if showEditor}
-<div class="editor-parent" in:fade="{{ duration: 150 }}" out:fade="{{ duration: 200 }}">>
+<div class="editor-parent" in:fade="{{ duration: 150 }}" out:fade="{{ duration: 200 }}">
   <ProductEditor product={editorProduct} on:products-updated={handleUpdate} on:edit-canceled={handleCancel}/>
 </div>
 {/if}
