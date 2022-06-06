@@ -18,8 +18,8 @@
 
 <script>
   import { fade } from 'svelte/transition';
-  import ProductEditor from "../components/ProductEditor.svelte";
-  import { Product, Brand } from "../classes";
+  // import BrandEditor from "../components/BrandEditor.svelte";
+  import { Brand } from "../classes";
 
   const filterBrands = (brands, searchString) => [...new Set([
     ...brands.filter(i => i.DisplayName.toLowerCase().includes(searchString.toLowerCase())),

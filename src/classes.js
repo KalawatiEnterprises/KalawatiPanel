@@ -1,5 +1,6 @@
 export class Product {
   constructor() {
+    this.ID = null;
     this.Name = "";
     this.Description = "";
     this.Brand = new Brand();
@@ -13,10 +14,10 @@ export class Brand {
   }
 }
 
-// export class Category {
-//   constructor() {
-//     this.ID = null;
-//     this.Name = "";
-//     this.Parent = null;
-//   }
-// }
+export class Category {
+  constructor() {
+    this.ID = null;
+    this.Name = "";
+    this.Parent = null;
+  }
+}

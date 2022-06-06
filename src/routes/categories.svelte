@@ -18,85 +18,75 @@
 
 <script>
   import { fade } from 'svelte/transition';
-  import ProductEditor from "../components/ProductEditor.svelte";
-  import { Product } from "../classes";
+  // import CategoryEditor from "../components/CategoryEditor.svelte";
+  import { Category } from "../classes";
 
-  const filterProducts = (products, searchString) =>
-    products.filter(i => i.Name.toLowerCase().includes(searchString.toLowerCase()))
+  const filterCategories = (categories, searchString) =>
+    categories.filter(i => i.Name.toLowerCase().includes(searchString.toLowerCase()))
 
-  const stringify = (categories) =>
-    categories == null
-      ? "None"
-      : categories.map(i => i.Name).toString();
-
-  let products = [];
-  const loadProducts = () =>
-    fetch('http://localhost:4001/api/products')
+  let categories = [];
+  const loadCategories = () =>
+    fetch('http://localhost:4001/api/categories')
       .then(response => response.json())
       .then(data => {
-        products = data;
+        categories = data;
       });
-  loadProducts();
+  loadCategories();
 
   let searchString = "";
   let showEditor = false;
-  let editorProduct = new Product();
+  let editorCategory = new Category();
 
   const handleAddNew = () => {
     showEditor = true;
-    editorProduct = new Product();
+    editorCategory = new Category();
   }
 
   const handleCancel = () => {
     showEditor = false;
-    editorProduct = new Product();
+    editorCategory = new Category();
   }
 
   const handleUpdate = () => {
-    loadProducts();
+    loadCategories();
     handleCancel();
   }
 </script>
 
 <div class="searchbox">
-  Search Products <input bind:value={searchString}/>
+  Search Categories <input bind:value={searchString}/>
 </div>
 
-{#key products}
+{#key categories}
 <table in:fade="{{ duration: 200, delay: 100 }}" out:fade="{{ duration: 300, delay: 0 }}">
   <tr>
     <th>Name</th>
-    <th>Description</th>
-    <th>Brand Name</th>
-    <th>Categories</th>
+    <th>Parent</th>
     <button on:click={handleAddNew}>Add New</button>
   </tr>
-  {#if products != null}
-    {#each filterProducts(products, searchString) as p}
+  {#if categories != null}
+    {#each filterCategories(categories, searchString) as c}
       <tr>
-        <td>{p.Name}</td>
-        <td>{p.Description}</td>
-        <td>{p.Brand.DisplayName} ({p.Brand.Name})</td>
-        <td>
-          {stringify(p.Categories)}
-        </td>
-        <button on:click={() => {showEditor = true; editorProduct = p}}>
+        <td>{c.Name}</td>
+        <td>{c.Parent == null ? "" : c.Parent.Name}</td>
+        <button on:click={() => {showEditor = true; editorCategory = c}}>
           Edit
         </button>
       </tr>
     {:else}
-      <h1>No Products With This Name Found.</h1>
+      <h1>No Categories With This Name Found.</h1>
     {/each}
   {:else}
-    <h1>No Products Exist In The Database.</h1>
+    <h1>No Categories Exist In The Database.</h1>
   {/if}
 </table>
 {/key}
 
 {#if showEditor}
-<div class="editor-parent" in:fade="{{ duration: 150 }}" out:fade="{{ duration: 200 }}">
+<h1>Coming Soon</h1>
+<!--div class="editor-parent" in:fade="{{ duration: 150 }}" out:fade="{{ duration: 200 }}">
   <ProductEditor product={editorProduct} on:products-updated={handleUpdate} on:edit-canceled={handleCancel}/>
-</div>
+</div-->
 {/if}
 
 <style>
@@ -114,12 +104,13 @@
     margin-left: 1rem;
   }
   table {
-    width: 80%;
+    width: 30%;
     margin: auto;
   }
   th, td {
     text-align: left;
     border-bottom: 1px solid black;
+    width: 100%;
   }
   .editor-parent {
     z-index: 10;
