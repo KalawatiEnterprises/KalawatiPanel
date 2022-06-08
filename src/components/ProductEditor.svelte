@@ -58,11 +58,43 @@
       },
       body: JSON.stringify(product)
     });
-    dispatch("products-updated", {});
+    dispatch("products-updated");
+  }
+
+  const handleImageDelete = async(path, id) => {
+    const res = await fetch("http://localhost:4001/api/images/", {
+      method: "delete",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(path)
+    });
+    loadImages();
+    // product.Images = product.Images.filter((_, index) => index !== id);
+  }
+
+  const loadImages = async() => {
+    const res = await fetch(`http://localhost:4001/api/images/${product.ID}`)
+      .then(response => response.json())
+      .then(data => product.Images = data);
+  }
+
+  const handleUpload = async(e, imageId) => {
+    let data = new FormData();
+    data.append("image", e.target.files[0]);
+    data.append("product-id", product.ID);
+    data.append("image-id", imageId);
+
+    const res = await fetch("http://localhost:4001/api/images/", {
+      method: "post",
+      body: data
+    });
+
+    loadImages();
   }
 
   const handleCancel = () =>
-    dispatch("edit-canceled", {})
+    dispatch("edit-canceled");
 
   const handleCategoryDelete = (c) =>{
     product.Categories = product.Categories.filter((i) => i.ID !== c.ID);
@@ -135,11 +167,28 @@
     </div>
   </div>
   <div class="images">
-    <p>Images for {product.Name != "" ? product.Name : "<no name>"}:</p>
-    {#if product.Images != null}
-      {#each product.Images as i}
-        <img src={`http://localhost:4001/${i}`}>
+    {#if product.Images != null && product.Images.length > 0}
+      <p>Images for {product.Name != "" ? product.Name : "<no name>"}:</p>
+      {#each product.Images as i, index}
+        <div class="image">
+          <img src={`http://localhost:4001/images/${i}`}>
+          <div class="image-options">
+            <input class="hidden" id={`image-hidden-input-${index}`} type="file" accept=".webp" on:change={(e) => handleUpload(e, index)}>
+            <button on:click={() => {document.getElementById(`image-hidden-input-${index}`).click()}}>Replace</button>
+            <button on:click={() => handleImageDelete(i, index)}>Delete</button>
+          </div>
+        </div>
       {/each}
+      {#if product.Images.length < 2}
+        <input type="file" accept=".webp" on:change={(e) => handleUpload(e, product.Images.length)}>
+      {/if}
+    {:else}
+      {#if product.ID != null}
+        <p>No Images Added For {product.Name != "" ? product.Name : "<no name>"}.</p>
+        <input type="file" accept=".webp" on:change={(e) => handleUpload(e, 0)}>
+      {:else}
+        <p>Save The Product "{product.Name != "" ? product.Name : "<no name>"}" First Before Uploading Images.</p>
+      {/if}
     {/if}
   </div>
   {#if product.ID != null}
@@ -185,6 +234,7 @@
   }
   button {
     width: 5rem;
+    height: 1.8rem;
   }
   .field {
     width: 30rem;
@@ -214,11 +264,46 @@
     text-align: center;
   }
   .images {
-    border: 1px solid black;
     height: 40%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
   }
-  .images img {
-    max-height: 7rem;
-    max-width: 7rem;
+  .images .image {
+    border: 1px solid black;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+  }
+  .image-options {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    background-color: #0000004D;
+  }
+  .hidden {
+    display: none;
+  }
+  .image-options button {
+    margin: 0.5rem;
+  }
+  .image:hover .image-options {
+    display: flex;
+  }
+  .image:hover img {
+    filter: blur(3px);
+    -webkit-filter: blur(3px);
+  }
+  .images .image img {
+    max-height: 13rem;
+    max-width: 15rem;
+    display: block;
+    margin: auto;
   }
 </style>
