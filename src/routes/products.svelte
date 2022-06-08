@@ -127,7 +127,7 @@
     left: 0; right: 0;
     margin: auto;
     border: 1px solid black;
-    height: 40vh;
+    height: 60vh;
     width: 60vw;
     box-shadow: 0.1rem 0.1rem 0.3rem 0.05rem rgba(35, 38, 39, 0.7);
   }

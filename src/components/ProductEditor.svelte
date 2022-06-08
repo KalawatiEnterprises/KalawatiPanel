@@ -78,56 +78,69 @@
 
 <div class="product-editor">
   <h4 class="notice warning">{noticeText}</h4>
-  <div class="fields">
-    <div class="field">
-      Name:
-      <input bind:value={product.Name} placeholder="Product Name">
-    </div>
-    <div class="field">
-      Description:
-      <input bind:value={product.Description} placeholder="Product Description">
-    </div>
+  <div class="flex-container">
+    <div class="fields">
+      <div class="field">
+        Name:
+        <input bind:value={product.Name} placeholder="Product Name">
+      </div>
+      <div class="field">
+        Description:
+        <input bind:value={product.Description} placeholder="Product Description">
+      </div>
 
-    <div class="field">
-      Brand:
-      <select bind:value={product.Brand.ID}>
-        <option value={null} disabled selected hidden>Select a Brand</option>
-        {#each brands as b}
-          <option value={b.ID}>{b.Name} / {b.DisplayName}</option>
-        {/each}
-      </select>
+      <div class="field">
+        Brand:
+        <select bind:value={product.Brand.ID}>
+          <option value={null} disabled selected hidden>Select a Brand</option>
+          {#each brands as b}
+            <option value={b.ID}>{b.Name} / {b.DisplayName}</option>
+          {/each}
+        </select>
+      </div>
+    </div>
+    <div class="categories-menu field">
+      Categories: (double click to delete)
+      <div class="categories">
+        {#if product.Categories != null}
+          {#each product.Categories as c, i}
+            <span on:dblclick={() => handleCategoryDelete(c)}>{c.Name}{`${(i < product.Categories.length - 1) ? ", " : ""}`}</span>
+          {:else}
+            <div>No Categories Added</div>
+            <div class="warning">WARNING: If no categories are added the product won't be shown on the website.</div>
+          {/each}
+        {:else}
+          <div>No Categories Added</div>
+          <div class="warning">WARNING: If no categories are added the product won't be shown on the website.</div>
+        {/if}
+      </div>
+
+      <div class="editor">
+
+        <select bind:value={newCategoryID} placeholder="fuck me">
+          <option value={null} disabled selected hidden>Select a Category</option>
+          {#each filteredCategories(categories, product.Categories) as c}
+            <option value={c.ID}>{c.Name}</option>
+          {/each}
+        </select>
+
+        <button class="add-category"
+          on:click={() => {
+            const newCategory = {"ID": newCategoryID, "Name": categories.find(i => i.ID == newCategoryID).Name};
+            product.Categories = product.Categories != null
+              ? [...product.Categories, newCategory] : [newCategory];
+          }}> Add </button>
+
+      </div>
     </div>
   </div>
-  <div class="categories-menu field">
-    Categories: (double click to delete)
-    <div class="categories">
-      {#if product.Categories != null}
-        {#each product.Categories as c, i}
-          <span on:dblclick={() => handleCategoryDelete(c)}>{c.Name}{`${(i < product.Categories.length - 1) ? ", " : ""}`}</span>
-        {/each}
-      {:else}
-        <div>No Categories Added</div>
-        <div class="warning">WARNING: If no categories are added the product won't be shown on the website.</div>
-      {/if}
-    </div>
-
-    <div class="editor">
-
-      <select bind:value={newCategoryID} placeholder="fuck me">
-        <option value={null} disabled selected hidden>Select a Category</option>
-        {#each filteredCategories(categories, product.Categories) as c}
-          <option value={c.ID}>{c.Name}</option>
-        {/each}
-      </select>
-
-      <button class="add-category"
-        on:click={() => {
-          const newCategory = {"ID": newCategoryID, "Name": categories.find(i => i.ID == newCategoryID).Name};
-          product.Categories = product.Categories != null
-            ? [...product.Categories, newCategory] : [newCategory];
-        }}> Add </button>
-
-    </div>
+  <div class="images">
+    <p>Images for {product.Name != "" ? product.Name : "<no name>"}:</p>
+    {#if product.Images != null}
+      {#each product.Images as i}
+        <img src={`http://localhost:4001/${i}`}>
+      {/each}
+    {/if}
   </div>
   {#if product.ID != null}
     <div class="options-alt">
@@ -145,6 +158,11 @@
     position: relative;
     height: 100%;
     width: 100%;
+  }
+  .flex-container {
+    width: 100%;
+    padding-top: 10vh;
+    padding-bottom: 2rem;
     display: flex;
     justify-content: space-around;
     align-items: center;
@@ -194,5 +212,13 @@
     left: 0; right: 0;
     margin: auto;
     text-align: center;
+  }
+  .images {
+    border: 1px solid black;
+    height: 40%;
+  }
+  .images img {
+    max-height: 7rem;
+    max-width: 7rem;
   }
 </style>
