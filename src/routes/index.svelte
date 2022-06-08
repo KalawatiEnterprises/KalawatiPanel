@@ -16,19 +16,25 @@
  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 
-<script>
-  let counter = 1;
-  $:counter = 1;
-</script>
-
-<svelte:head>
-  <title>Website Manager (Kalawati Enterprises)</title>
-</svelte:head>
-
-<button on:click={() => counter += 1}>{counter}</button>
+<div class="menu">
+  <a href="/categories"><button>Categories</button></a>
+  <a href="/brands"><button>Brands</button></a>
+  <a href="/products"><button>Products</button></a>
+</div>
 
 <style>
+  .menu {
+    position: fixed;
+    margin: auto;
+    top: 0; bottom: 0;
+    left: 0; right: 0;
+    height: 2rem;
+    width: 20rem;
+    display: flex;
+    justify-content: space-around;
+  }
   button {
-    width: 10em;
+    width: 6rem;
+    height: 2rem;
   }
 </style>
