@@ -33,9 +33,7 @@
   const loadProducts = () =>
     fetch('http://localhost:4001/api/products')
       .then(response => response.json())
-      .then(data => {
-        products = data;
-      });
+      .then(data => products = data);
   loadProducts();
 
   let searchString = "";

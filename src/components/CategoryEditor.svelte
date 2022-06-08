@@ -18,29 +18,36 @@
 
 <script>
   import { createEventDispatcher } from 'svelte';
+  import { Category } from "../classes";
 
   const dispatch = createEventDispatcher();
 
-  export let brand = null;
+  let categories = [];
+  fetch('http://localhost:4001/api/categories')
+    .then(response => response.json())
+    .then(data => categories = data);
+
+  export let category = null;
+  category.Parent = category.Parent == null ? new Category() : category.Parent
 
   let noticeText = ""
-  const validate = (brand) => {
-    if (brand.DisplayName == "")
-      return "Display Name Can't Be Blank.";
+  const validate = (category) => {
+    if (category.Name == "")
+      return "Category Name Can't Be Blank.";
     return "";
   }
 
   const handleSave = async(method) => {
-    noticeText = validate(brand);
+    noticeText = validate(category);
     if (noticeText != "" && method !== "delete") return;
-    const res = await fetch("http://localhost:4001/api/brands", {
+    const res = await fetch("http://localhost:4001/api/categories", {
       method: method,
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify(brand)
+      body: JSON.stringify(category)
     });
-    dispatch("brands-updated", {});
+    dispatch("categories-updated", {});
   }
 
   const handleCancel = () =>
@@ -48,40 +55,38 @@
 </script>
 
 
-<div class="brand-editor">
+<div class="category-editor">
   <h4 class="notice warning">{noticeText}</h4>
   <div class="fields">
     <div class="field">
-      Display Name:
-      <input bind:value={brand.DisplayName} placeholder="Display Name">
+      Name:
+      <input bind:value={category.Name} placeholder="Category Name">
     </div>
-    <div class="field">
-      Full Title:
-      <input bind:value={brand.Name} placeholder="Full Title of Brand">
-    </div>
-    <div class="field">
-      Website:
-      <input bind:value={brand.Website} placeholder="Brand's Official Website">
-    </div>
-    <div class="field">
-      Logo URL:
-      <input bind:value={brand.LogoURL} placeholder="Brand's Logo's Link">
-    </div>
+    {#if categories != null}
+      <div class="field">
+        Parent Category:
+        <select bind:value={category.Parent.ID}>
+          <option value={null} selected>None</option>
+          {#each categories.filter(i => i.ID != category.ID && i.Parent == null) as c}
+            <option value={c.ID}>{c.Name}</option>
+          {/each}
+        </select>
+      </div>
+    {/if}
   </div>
-  <img src={brand.LogoURL} class="brand-logo">
-  {#if brand.ID != null}
+  {#if category.ID != null}
     <div class="options-alt">
       <button on:click={() => handleSave("delete")}>Delete</button>
     </div>
   {/if}
   <div class="options">
     <button on:click={handleCancel}>Cancel</button>
-    <button on:click={() => handleSave(brand.ID == null ? "post" : "put")}>Save</button>
+    <button on:click={() => handleSave(category.ID == null ? "post" : "put")}>Save</button>
   </div>
 </div>
 
 <style>
-  .brand-editor {
+  .category-editor {
     position: relative;
     height: 100%;
     width: 100%;
@@ -126,9 +131,5 @@
     left: 0; right: 0;
     margin: auto;
     text-align: center;
-  }
-  .brand-logo {
-    max-height: 60%;
-    margin-bottom: 1rem;
   }
 </style>

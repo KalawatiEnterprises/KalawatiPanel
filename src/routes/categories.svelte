@@ -18,19 +18,19 @@
 
 <script>
   import { fade } from 'svelte/transition';
-  // import CategoryEditor from "../components/CategoryEditor.svelte";
+  import CategoryEditor from "../components/CategoryEditor.svelte";
   import { Category } from "../classes";
 
-  const filterCategories = (categories, searchString) =>
-    categories.filter(i => i.Name.toLowerCase().includes(searchString.toLowerCase()))
+  const filterCategories = (categories, searchString) => [...new Set([
+    ...categories.filter(i => i.Name.toLowerCase().includes(searchString.toLowerCase())),
+    ...categories.filter(i => (i.Parent != null) && i.Parent.Name.toLowerCase().includes(searchString.toLowerCase()))
+  ])];
 
   let categories = [];
   const loadCategories = () =>
     fetch('http://localhost:4001/api/categories')
       .then(response => response.json())
-      .then(data => {
-        categories = data;
-      });
+      .then(data => categories = data);
   loadCategories();
 
   let searchString = "";
@@ -39,7 +39,9 @@
 
   const handleAddNew = () => {
     showEditor = true;
-    editorCategory = new Category();
+    const c = new Category();
+    c.Parent = new Category();
+    editorCategory = c;
   }
 
   const handleCancel = () => {
@@ -69,7 +71,13 @@
       <tr>
         <td>{c.Name}</td>
         <td>{c.Parent == null ? "" : c.Parent.Name}</td>
-        <button on:click={() => {showEditor = true; editorCategory = c}}>
+        <button on:click={() => {
+          // Prevents table from reloading while also does the job
+          const categoryToEdit = c;
+          categoryToEdit.Parent = c.Parent == null ? new Category() : c.Parent;
+          editorCategory = categoryToEdit;
+          showEditor = true;
+        }}>
           Edit
         </button>
       </tr>
@@ -83,10 +91,9 @@
 {/key}
 
 {#if showEditor}
-<h1>Coming Soon</h1>
-<!--div class="editor-parent" in:fade="{{ duration: 150 }}" out:fade="{{ duration: 200 }}">
-  <ProductEditor product={editorProduct} on:products-updated={handleUpdate} on:edit-canceled={handleCancel}/>
-</div-->
+<div class="editor-parent" in:fade="{{ duration: 150 }}" out:fade="{{ duration: 200 }}">
+  <CategoryEditor category={editorCategory} on:categories-updated={handleUpdate} on:edit-canceled={handleCancel}/>
+</div>
 {/if}
 
 <style>

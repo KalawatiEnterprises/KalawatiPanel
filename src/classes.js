@@ -21,6 +21,10 @@ export class Category {
   constructor() {
     this.ID = null;
     this.Name = "";
-    this.Parent = null;
+    this.Parent = {
+      "ID": null,
+      "Name": "",
+      "Parent": null
+    };
   }
 }
