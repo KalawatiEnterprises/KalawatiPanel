@@ -37,6 +37,7 @@
     .then(data => products = data);
 
   export let product = null;
+  let password = "";
 
   let noticeText = ""
   const validate = (product) => {
@@ -50,27 +51,47 @@
   const handleSave = async(method) => {
     noticeText = validate(product);
     if (noticeText != "") return;
+    noticeText = password == "" ? "Password Can't Be Blank." : ""
+    if (noticeText != "") return;
+
+    let data = new FormData();
+    data.append("data", JSON.stringify(product));
+    data.append("passwd", password);
+
     const res = await fetch("http://localhost:4001/api/products", {
-      // method: product.ID == null ? "post" : "put",
       method: method,
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(product)
-    });
-    dispatch("products-updated");
+      body: data
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.error == "Incorrect Password.") {
+          noticeText = "Incorrect Password."
+        } else {
+          dispatch("products-updated", {});
+        }
+      });
   }
 
-  const handleImageDelete = async(path, id) => {
-    const res = await fetch("http://localhost:4001/api/images/", {
+  const handleImageDelete = async(path) => {
+    noticeText = password == "" ? "Enter The Password To Delete An Image" : ""
+    if (noticeText != "") return;
+
+    let data = new FormData();
+    data.append("passwd", password);
+    data.append("path", path)
+
+    const res = await fetch("http://localhost:4001/api/images", {
       method: "delete",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(path)
-    });
-    loadImages();
-    // product.Images = product.Images.filter((_, index) => index !== id);
+      body: data
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.error == "Incorrect Password.") {
+          noticeText = "Incorrect Password."
+        } else {
+          loadImages();
+        }
+      });
   }
 
   const loadImages = async() => {
@@ -80,7 +101,11 @@
   }
 
   const handleUpload = async(e, imageId) => {
+    noticeText = password == "" ? "Enter The Password To Delete An Image" : ""
+    if (noticeText != "") return;
+
     let data = new FormData();
+    data.append("passwd", password);
     data.append("image", e.target.files[0]);
     data.append("product-id", product.ID);
     data.append("image-id", imageId);
@@ -88,9 +113,15 @@
     const res = await fetch("http://localhost:4001/api/images/", {
       method: "post",
       body: data
-    });
-
-    loadImages();
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.error == "Incorrect Password.") {
+          noticeText = "Incorrect Password."
+        } else {
+          loadImages();
+        }
+      });
   }
 
   const handleCancel = () =>
@@ -175,7 +206,7 @@
           <div class="image-options">
             <input class="hidden" id={`image-hidden-input-${index}`} type="file" accept=".webp" on:change={(e) => handleUpload(e, index)}>
             <button on:click={() => {document.getElementById(`image-hidden-input-${index}`).click()}}>Replace</button>
-            <button on:click={() => handleImageDelete(i, index)}>Delete</button>
+            <button on:click={() => handleImageDelete(i)}>Delete</button>
           </div>
         </div>
       {/each}
@@ -197,6 +228,7 @@
     </div>
   {/if}
   <div class="options">
+    <input bind:value={password} placeholder="Enter the password here.">
     <button on:click={handleCancel}>Cancel</button>
     <button on:click={() => handleSave(product.ID == null ? "post" : "put")}>Save</button>
   </div>
@@ -229,7 +261,7 @@
     bottom: 3rem;
     right: 4rem;
     display: flex;
-    width: 12rem;
+    width: 32rem;
     justify-content: space-between;
   }
   button {
