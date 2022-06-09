@@ -27,8 +27,11 @@
     .then(response => response.json())
     .then(data => categories = data);
 
+
   export let category = null;
   category.Parent = category.Parent == null ? new Category() : category.Parent
+
+  let password = "";
 
   let noticeText = ""
   const validate = (category) => {
@@ -40,14 +43,25 @@
   const handleSave = async(method) => {
     noticeText = validate(category);
     if (noticeText != "" && method !== "delete") return;
+    noticeText = password == "" ? "Password Can't Be Blank." : ""
+    if (noticeText != "") return;
+
+    const data = new FormData();
+    data.append("data", JSON.stringify(category));
+    data.append("passwd", password);
+
     const res = await fetch("http://localhost:4001/api/categories", {
       method: method,
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(category)
-    });
-    dispatch("categories-updated", {});
+      body: data
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.error == "Incorrect Password.") {
+          noticeText = "Incorrect Password."
+        } else {
+          dispatch("categories-updated", {});
+        }
+      });
   }
 
   const handleCancel = () =>
@@ -80,6 +94,7 @@
     </div>
   {/if}
   <div class="options">
+    <input bind:value={password} placeholder="Enter the password here.">
     <button on:click={handleCancel}>Cancel</button>
     <button on:click={() => handleSave(category.ID == null ? "post" : "put")}>Save</button>
   </div>
@@ -107,7 +122,7 @@
     bottom: 3rem;
     right: 4rem;
     display: flex;
-    width: 12rem;
+    width: 32rem;
     justify-content: space-between;
   }
   button {

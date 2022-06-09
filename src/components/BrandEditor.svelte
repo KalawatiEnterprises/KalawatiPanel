@@ -22,6 +22,7 @@
   const dispatch = createEventDispatcher();
 
   export let brand = null;
+  let password = "";
 
   let noticeText = ""
   const validate = (brand) => {
@@ -33,14 +34,25 @@
   const handleSave = async(method) => {
     noticeText = validate(brand);
     if (noticeText != "" && method !== "delete") return;
+    noticeText = password == "" ? "Password Can't Be Blank." : ""
+    if (noticeText != "") return;
+
+    const data = new FormData();
+    data.append("data", JSON.stringify(brand));
+    data.append("passwd", password);
+
     const res = await fetch("http://localhost:4001/api/brands", {
       method: method,
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(brand)
-    });
-    dispatch("brands-updated", {});
+      body: data
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.error == "Incorrect Password.") {
+          noticeText = "Incorrect Password."
+        } else {
+          dispatch("brands-updated", {});
+        }
+      });
   }
 
   const handleCancel = () =>
@@ -75,6 +87,7 @@
     </div>
   {/if}
   <div class="options">
+    <input bind:value={password} placeholder="Enter the password here.">
     <button on:click={handleCancel}>Cancel</button>
     <button on:click={() => handleSave(brand.ID == null ? "post" : "put")}>Save</button>
   </div>
@@ -102,7 +115,7 @@
     bottom: 3rem;
     right: 4rem;
     display: flex;
-    width: 12rem;
+    width: 32rem;
     justify-content: space-between;
   }
   button {
@@ -128,7 +141,7 @@
     text-align: center;
   }
   .brand-logo {
-    max-height: 60%;
+    max-height: 50%;
     margin-bottom: 1rem;
   }
 </style>
